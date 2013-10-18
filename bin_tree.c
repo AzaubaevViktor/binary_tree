@@ -13,6 +13,7 @@ ELEMENT *create_element(int32_t value, ERROR *error) {
     return elem;
 }
 
+<<<<<<< HEAD
 void insert_element_to_down(ELEMENT *parent, ELEMENT *elem) {
     if (_is_right(parent->value,elem->value)) {
         parent->right= elem;
@@ -67,3 +68,36 @@ void print_elements_recursive(ELEMENT elem) {
         printf("\x1b[1;33m" "}" "\x1b[0m");
     }
 }
+=======
+void insert_element_to_down(ELEMENT parent, ELEMENT *elem) {
+    if (_is_right(parent.value,elem->value)) {
+        parent.right= elem;
+    } else {
+        parent.left = elem;
+    }
+}
+
+void insert_new_element_to_down(ELEMENT parent, int32_t value, ERROR *error) {
+    insert_element_to_down(parent,create_element(value,error));
+}
+
+void insert_element(ELEMENT root, int32_t value, ERROR *error) {
+    ELEMENT *now = 0;
+    now = &root;
+    while (1) {
+        if (_is_right(now->value,value)) {
+            if (NULL == now->right) {
+                insert_new_element_to_down(*now,value,error);
+                break;
+            } else {
+                now = now->right; }
+        } else {
+            if (NULL == now->left) {
+                insert_new_element_to_down(*now,value,error);
+                break;
+            } else {
+                now = now->left; }
+        }
+    }
+}
+>>>>>>> b765861fe34e507c112a648ef3f417fecc5fa19b
