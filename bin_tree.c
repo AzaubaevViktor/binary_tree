@@ -1,8 +1,10 @@
+#include "bin_tree.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "bin_tree.h"
 
 #define _is_right(a,b) ((a) < (b))
+
+#define _DEBUG_DELETE
 
 ELEMENT *create_element(int32_t value, ERROR *error) {
     ELEMENT *elem = calloc(sizeof(ELEMENT),1);
@@ -19,6 +21,7 @@ void insert_element_to_down(ELEMENT *parent, ELEMENT *elem) {
     } else {
         parent->left = elem;
     }
+    k_elem ++;
 }
 
 void insert_new_element_to_down(ELEMENT *parent, int32_t value, ERROR *error) {
@@ -30,8 +33,6 @@ void insert_element(ELEMENT **root, int32_t value, ERROR *error) {
     int is_inserted = 0;
     if (NULL == *root) {
         *root = create_element(value,error); /* TODO: Memory allocate error */
-    }
-    if (0 != error->error) {
         return;
     }
     now = *root;
@@ -54,16 +55,50 @@ void insert_element(ELEMENT **root, int32_t value, ERROR *error) {
     }
 }
 
-void print_elements_recursive(ELEMENT elem) {
-    if (NULL != elem.left) {
-        printf("\x1b[1;32m" "[" "\x1b[0m");
-        print_elements_recursive(*elem.left);
-        printf("\x1b[1;32m" "]\n" "\x1b[0m" "<-");
+void delete_tree(ELEMENT *root) {
+    if (NULL != root) {
+        if (NULL != root->left) {
+#ifdef DEBUG_DELETE
+            printf("Deleting left branch of (%d)...\n",root->value);
+#endif
+            delete_tree(root->left);
+#ifdef DEBUG_DELETE
+            printf("Left branch of (%d) delete\n",root->value);
+#endif
+            if (0 != root->right) {
+#ifdef DEBUG_DELETE
+                printf("Deleting right branch of (%d)...\n",root->value);
+#endif
+                delete_tree(root->right);
+#ifdef DEBUG_DELETE
+                printf("Right branch of (%d) delete\n",root->value);
+#endif
+            }
+        }
+#ifdef DEBUG_DELETE
+        printf("Delete (%d)...",root->value);
+#endif
+        free(root);
+#ifdef DEBUG_DELETE
+        printf("Ok!\n");
+#endif
     }
-    printf("\x1b[1m" "(%d)" "\x1b[0m",elem.value);
-    if (NULL != elem.right) {
-        printf("->" "\n\x1b[1;33m" "{" "\x1b[0m");
-        print_elements_recursive(*elem.right);
-        printf("\x1b[1;33m" "}" "\x1b[0m");
+}
+
+void print_elements_recursive(ELEMENT *elem) {
+    if (NULL != elem) {
+        if (NULL != elem->left) {
+            printf("\x1b[1;32m" "[" "\x1b[0m");
+            print_elements_recursive(elem->left);
+            printf("\x1b[1;32m" "]" "\x1b[0m" "<-");
+        }
+
+        printf("\x1b[1m" "%i32" "\x1b[0m",elem->value);
+
+        if (NULL != elem->right) {
+            printf("->" "\x1b[1;33m" "{" "\x1b[0m");
+            print_elements_recursive(elem->right);
+            printf("\x1b[1;33m" "}" "\x1b[0m");
+        }
     }
 }

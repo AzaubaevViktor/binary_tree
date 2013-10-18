@@ -1,13 +1,14 @@
 #include "bin_tree.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 #include <unistd.h>
 #include <getopt.h>
 #include <string.h>
 
 typedef struct {
     int error;
-    long int num;
+    int32_t num;
 } INT_FROM_FILE;
 
 int add_num_from_file(ELEMENT **root, char *filename_input,ERROR *error);
@@ -19,30 +20,43 @@ void print_help();
 #define PARSE_ERROR (13)
 #define OPEN_FILE_ERROR (14)
 
+#define STANDART "\x1b[0m"
+#define BOLD_WHITE "\x1b[1;37m"
+#define BOLD_YELLOW "\x1b[1;33m"
+#define BOLD_GREEN "\x1b[1;32m"
+
+#define _DEBUG_ADD_NUM
+#define _DEBUG_PARSER
+
 int main(int argc, char *argv[])
 {
     int opt = 0;
-    FILE *output=0;
-    char filename_output[100] = "\0";
+    int16_t i = 0;
     ELEMENT *root = 0;
     ERROR error;
+    int quiet_mode = 0;
     error.error = 0;
     strcpy(error.str,"\0");
 
     opterr = 0;
     optind = 0;
-    while ( (-1 != (opt = getopt(argc,argv,"i:o:h"))) && (0 == error.error)) {
+    while ( (-1 != (opt = getopt(argc,argv,"i:n:hq"))) && (0 == error.error)) {
+#ifdef DEBUG_PARSER
         printf("opt:%c, optarg:'%s'; optind:%d, opterr:%d, optopt:%d\n",opt,optarg,optind,opterr,optopt);
+#endif
         switch (opt) {
         case 'i':
             add_num_from_file(&root,optarg,&error);
             break;
-        case 'o':
-            strcpy(filename_output,optarg);
-            break;
         case 'h':
             print_help();
             return 0;
+            break;
+        case 'q':
+            quiet_mode = 1;
+            break;
+        case 'n':
+            insert_element(&root,atoll(optarg),&error);
             break;
         case '?':
             error.error = PARSE_ERROR;
@@ -50,7 +64,7 @@ int main(int argc, char *argv[])
             break;
         default:
             printf("Если вы можете повторить эту ошибку, отправьте, пожалуйста информацию\n"
-                   "Вот сюда: sarvash.inc@gmail.com\n Если же не сможете повторить, то что-то не так с вашим девайсом\n");
+                   " вот сюда: sarvash.inc@gmail.com\n Если же не сможете повторить, то что-то не так с вашим девайсом\n");
             break;
         }
     }
@@ -60,16 +74,21 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    output = fopen(optarg,"wt");
-    if (NULL == fopen) {
-        error.error = OPEN_FILE_ERROR;
-        strcpy(error.str,optarg);
-        print_error(error);}
-
-    /* start processing nums */
-
-    print_elements_recursive(*root);
-    printf("\n");
+    for (i=optind;i<argc;i++) {
+        insert_element(&root,atoi(argv[i]),&error);
+        if (0 != error.error) {
+            print_error(error);
+        }
+    }
+    if (!quiet_mode) {
+        print_elements_recursive(root);
+        printf("\n");
+    }
+    delete_tree(root);
+    if (!quiet_mode) {
+        printf("\n");
+        printf("Programm succesly stoped!\n" STANDART);
+    }
     return 0;
 }
 
@@ -111,7 +130,7 @@ void read_int_from_file(FILE *f, INT_FROM_FILE *ret) {
         ret->error = PARSE_ERROR;
         ret->num = 0;
         break;
-    case ' ': /* пробельные символы */
+    case ' ': /* Space chars */
     case '\n':
     case '\t':
         if (!is_num_exist) {
@@ -132,6 +151,7 @@ void read_int_from_file(FILE *f, INT_FROM_FILE *ret) {
 
 int add_num_from_file(ELEMENT **root, char *filename_input,ERROR *error) {
     FILE *f = fopen(filename_input,"rt");
+    int8_t read_file_flag = 0;
     INT_FROM_FILE ret;
 
     if (NULL == f) {
@@ -140,15 +160,33 @@ int add_num_from_file(ELEMENT **root, char *filename_input,ERROR *error) {
         return 1;
     }
 
-    while (1) {
+    read_file_flag = 1;
+#ifdef DEBUG_ADD_NUM
+    printf(BOLD_WHITE "Add num from file:" STANDART "\n");
+#endif
+    while (read_file_flag) {
         ret.error = 0;
         ret.num = 0;
         read_int_from_file(f,&ret);
-        if (0 == ret.error) {
+
+        switch (ret.error) {
+        case 0:
             insert_element(root,ret.num,error);
-        } else if (SPACE_CHAR != ret.error) {
-            break; }
+#ifdef DEBUG_ADD_NUM
+            printf(BOLD_WHITE "%i32:" STANDART,ret.num);
+            print_elements_recursive(**root);
+            printf("\n");
+#endif
+            break;
+        case SPACE_CHAR:
+            break;
+        default:
+            read_file_flag = 0;
+            break;
+        }
     }
+
+    puts("");
 
     if ((SPACE_CHAR!= ret.error) && (END_OF_FILE != ret.error)) {
         error->error = ret.error;
@@ -186,5 +224,28 @@ void print_error(ERROR error) {
 }
 
 void print_help() {
-    puts("Справка разрабатывается.\n");
+    puts("Лаба по бинарным деревьям.");
+    puts("");
+    puts(BOLD_WHITE"  Аргументы командной строки:"STANDART);
+    puts("  -i %file -- читает числа из файла. В файле должны быть только числа и,");
+    puts("       возможно, знак '-' для обозначения отрицательного числа.");
+    puts("");
+    puts("  %number -- добавляет число из аргументов. Отрицательные же числа");
+    puts("  -n %number следует вводить вот так, иначе отрицательное число будет");
+    puts("       распознано как аргумент. Также с помощью этого аргумента можно заносить");
+    puts("       и положительные числа.");
+    puts("");
+    puts("  -q 'тихий' режим, не выводит получившуюся последовательность на экран.");
+    puts("");
+    puts("  -h показать эту справку.");
+    puts("");
+    puts(BOLD_WHITE"  В общем случае вызов может выглядеть так:"STANDART);
+    puts(BOLD_WHITE"  bin_tree"STANDART" -i file.in 10 30 1 5 -n -8 -n 42 -i file2.in -q");
+    puts("      , при этом программа считает числа из файла file.in, числа из командной");
+    puts("      строки и числа из file2.in, результат не будет выведен на экран.");
+    puts("");
+    puts("  Пример результата:");
+    puts("  "BOLD_GREEN"[["STANDART"-8"BOLD_GREEN"]"STANDART"<-1->"BOLD_YELLOW"{"STANDART"5"BOLD_YELLOW"}"BOLD_GREEN"]"STANDART"<-10->"BOLD_YELLOW"{"STANDART"30->"BOLD_YELLOW"{"STANDART"42"BOLD_YELLOW"}}"STANDART);
+    puts("");
+    puts("");
 }
