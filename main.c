@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <getopt.h>
-<<<<<<< HEAD
 #include <string.h>
 
 typedef struct {
@@ -19,23 +18,10 @@ void print_help();
 #define SPACE_CHAR (12)
 #define PARSE_ERROR (13)
 #define OPEN_FILE_ERROR (14)
-=======
-
-struct INT_FROM_FILE {
-    int error;
-    long int num;
-};
-
-#define END_OF_FILE (1)
-#define SPACE_CHAR (2)
-#define PARSE_ERROR (3)
-#define OPEN_FILE_ERROR (4)
->>>>>>> b765861fe34e507c112a648ef3f417fecc5fa19b
 
 int main(int argc, char *argv[])
 {
     int opt = 0;
-<<<<<<< HEAD
     FILE *output=0;
     char filename_output[100] = "\0";
     ELEMENT *root = 0;
@@ -88,21 +74,6 @@ int main(int argc, char *argv[])
 }
 
 void read_int_from_file(FILE *f, INT_FROM_FILE *ret) {
-=======
-    FILE *output=stdout;
-
-    while (-1 != (opt = getopt(argc,argv,"i:o:"))) {
-        switch (opt) {
-        case 'i':
-        default:
-            break;
-        }
-    }
-    return 0;
-}
-
-void read_int_from_file(FILE *f, struct _INT_FROM_FILE *ret) {
->>>>>>> b765861fe34e507c112a648ef3f417fecc5fa19b
     int c = 0;
     int old_c = 0;
     int end_num_flag = 0;
@@ -159,20 +130,13 @@ void read_int_from_file(FILE *f, struct _INT_FROM_FILE *ret) {
     }
 }
 
-<<<<<<< HEAD
 int add_num_from_file(ELEMENT **root, char *filename_input,ERROR *error) {
-=======
-int add_num_from_file(ELEMENT root, char *filename_input,ERROR *error) {
->>>>>>> b765861fe34e507c112a648ef3f417fecc5fa19b
     FILE *f = fopen(filename_input,"rt");
     INT_FROM_FILE ret;
 
     if (NULL == f) {
         error->error = OPEN_FILE_ERROR;
-<<<<<<< HEAD
         strcpy(error->str,filename_input);
-=======
->>>>>>> b765861fe34e507c112a648ef3f417fecc5fa19b
         return 1;
     }
 
@@ -195,7 +159,6 @@ int add_num_from_file(ELEMENT root, char *filename_input,ERROR *error) {
     }
 
 }
-<<<<<<< HEAD
 
 void print_error(ERROR error) {
     switch (error.error) {
@@ -225,5 +188,3 @@ void print_error(ERROR error) {
 void print_help() {
     puts("Справка разрабатывается.\n");
 }
-=======
->>>>>>> b765861fe34e507c112a648ef3f417fecc5fa19b
