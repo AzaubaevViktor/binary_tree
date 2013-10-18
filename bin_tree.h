@@ -15,8 +15,9 @@ typedef struct {
 #define MEMORY_ALLOCATE_ERROR 1
 
 ELEMENT *create_element(int32_t value, ERROR *error);
-void insert_element_to_down(ELEMENT parent, ELEMENT *elem);
-void insert_new_element_to_down(ELEMENT parent, int32_t value, ERROR *error);
-void insert_element(ELEMENT root, int32_t value, ERROR *error);
+void insert_element_to_down(ELEMENT *parent, ELEMENT *elem);
+void insert_new_element_to_down(ELEMENT *parent, int32_t value, ERROR *error);
+void insert_element(ELEMENT **root, int32_t value, ERROR *error);
+void print_elements_recursive(ELEMENT elem);
 
 #endif // BIN_TREE_H
